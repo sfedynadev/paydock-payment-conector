@@ -12,7 +12,8 @@
     "strict": true,
     "skipLibCheck": true,
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types", "src/custom-types"]
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.[test|spec].ts"]
