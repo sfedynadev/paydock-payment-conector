@@ -18,7 +18,7 @@ async function runPostDeployScripts() {
   try {
     const properties = new Map(Object.entries(process.env));
     await postDeploy(properties);
-    checkAndCreatePaydockPaymentMethod('PaydockPay','paydock-pay');
+    checkAndCreatePaydockTypeForPaymentMethod();
     console.log('Post-deploy script executed successfully.');
   } catch (error) {
     if (error instanceof Error) {

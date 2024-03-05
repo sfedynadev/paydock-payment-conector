@@ -27,11 +27,11 @@ const apiRoot = createApiBuilderFromCtpClient(client).withProjectKey({ projectKe
 
 
 export async function checkAndCreatePaydockTypeForPaymentMethod() {
-    let paydockPaymentStatuses;
+    let paydockPaymentCustomType;
     try {
-        paydockPaymentStatuses = await apiRoot.types().withKey({ key: 'paydock-payment-type' }).get().execute();
+        paydockPaymentCustomType = await apiRoot.types().withKey({ key: 'paydock-payment-type' }).get().execute();
     } catch (error) {
-        paydockPaymentStatuses = await apiRoot.types().post({
+        paydockPaymentCustomType = await apiRoot.types().post({
             body: {
                 key:  'paydock-payment-type',
                 name: {
@@ -89,7 +89,7 @@ export async function checkAndCreatePaydockTypeForPaymentMethod() {
                     },
                     {
                         name: 'PaydockTransactionId',
-                        label: { en: 'paydock transaction ID' },
+                        label: { en: 'Paydock transaction ID' },
                         required: false,
                         type: { name: 'String' },
                         inputHint: 'SingleLine'
@@ -98,41 +98,5 @@ export async function checkAndCreatePaydockTypeForPaymentMethod() {
             }
         }).execute();
     }
-    return paydockPaymentStatuses;
-}
-
-export async function checkAndCreatePaydockPaymentMethod(paymentName: string, paymentKey: string) {
-    let customType = await checkAndCreatePaydockTypeForPaymentMethod();
-    let paydockPayment;
-    try {
-        paydockPayment = await apiRoot.payments().withKey({ key: paymentKey }).get().execute();
-    } catch (error) {
-        paydockPayment = await apiRoot.payments().post({
-            body: {
-                key : paymentKey,
-                amountPlanned: {
-                    currencyCode: 'USD',
-                    centAmount: 10000
-                },
-                paymentMethodInfo: {
-                    paymentInterface: 'Mock',
-                    method: paymentKey,
-                    name: {
-                        en: paymentName
-                    }
-                },
-                custom: {
-                    type: {
-                        typeId: 'type',
-                        id: customType.body.id
-                    },
-                    fields: {
-                        PaydockTransactionId: '12345ABC',
-                        PaydockPaymentStatus: 'paydock-pending'
-                    }
-                }
-            }
-        }).execute();
-    }
-    return paydockPayment;
+    return paydockPaymentCustomType;
 }
