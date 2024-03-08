@@ -1,14 +1,14 @@
-import { createClient } from '@commercetools/sdk-client';
-import { createAuthMiddlewareForClientCredentialsFlow } from '@commercetools/sdk-middleware-auth';
-import { createHttpMiddleware } from '@commercetools/sdk-middleware-http';
-import { createApiBuilderFromCtpClient } from '@commercetools/typescript-sdk';
+import {createClient} from '@commercetools/sdk-client';
+import {createAuthMiddlewareForClientCredentialsFlow} from '@commercetools/sdk-middleware-auth';
+import {createHttpMiddleware} from '@commercetools/sdk-middleware-http';
+import {createApiBuilderFromCtpClient} from '@commercetools/typescript-sdk';
 import {getConfig} from "../config/config";
 
 const config = getConfig();
 const projectKey = config.projectKey;
 const clientId = config.clientId;
-const clientSecret =  config.clientSecret;
-const authUrl =  config.authUrl;
+const clientSecret = config.clientSecret;
+const authUrl = config.authUrl;
 const apiUrl = config.apiUrl;
 
 const client = createClient({
@@ -16,26 +16,53 @@ const client = createClient({
         createAuthMiddlewareForClientCredentialsFlow({
             host: authUrl,
             projectKey,
-            credentials: { clientId, clientSecret },
+            credentials: {clientId, clientSecret},
             scopes: [`manage_project:${projectKey}`],
         }),
-        createHttpMiddleware({ host: apiUrl }),
+        createHttpMiddleware({host: apiUrl}),
     ],
 });
 
-const apiRoot = createApiBuilderFromCtpClient(client).withProjectKey({ projectKey });
+const apiRoot = createApiBuilderFromCtpClient(client).withProjectKey({projectKey});
 
+export async function checkAndCreatePaydockPayExtension() {
+    let paydockPaymentCustomType;
+    try {
+        paydockPaymentCustomType = await apiRoot.extensions().withKey({key: 'paydock-extension'}).get().execute();
+
+    } catch (error) {
+        let url = "https://api.paydock-commercetool-app.jetsoftpro.dev/paydock-extension/create-payment";
+        //let url = "http://localhost:3003/paydock-extension/create-payment";
+
+        paydockPaymentCustomType = await apiRoot.extensions().post({
+            body: {
+                key: 'paydock-extension',
+                destination: {
+                    type: "HTTP",
+                    url: url
+                },
+                triggers: [
+                    {
+                        resourceTypeId: "payment",
+                        actions: ["Create", "Update"]
+                    }
+                ]
+            }
+        }).execute();
+    }
+    return paydockPaymentCustomType;
+}
 
 export async function checkAndCreatePaydockTypeForPaymentMethod() {
     let paydockPaymentCustomType;
     try {
-        paydockPaymentCustomType = await apiRoot.types().withKey({ key: 'paydock-payment-type' }).get().execute();
+        paydockPaymentCustomType = await apiRoot.types().withKey({key: 'paydock-payment-type'}).get().execute();
     } catch (error) {
         paydockPaymentCustomType = await apiRoot.types().post({
             body: {
-                key:  'paydock-payment-type',
+                key: 'paydock-payment-type',
                 name: {
-                    en:'Paydock payment',
+                    en: 'Paydock payment',
                 },
                 description: {
                     en: `Paydock payment`,
@@ -50,7 +77,7 @@ export async function checkAndCreatePaydockTypeForPaymentMethod() {
                         required: false,
                         type: {
                             name: 'Enum',
-                            values:[
+                            values: [
                                 {
                                     "key": "paydock-pending",
                                     "label": "Pending via Paydock"
@@ -89,9 +116,9 @@ export async function checkAndCreatePaydockTypeForPaymentMethod() {
                     },
                     {
                         name: 'PaydockTransactionId',
-                        label: { en: 'Paydock transaction ID' },
+                        label: {en: 'Paydock transaction ID'},
                         required: false,
-                        type: { name: 'String' },
+                        type: {name: 'String'},
                         inputHint: 'SingleLine'
                     }
                 ]

@@ -7,7 +7,7 @@ export const config = {
   jwtIssuer: process.env.CTP_JWT_ISSUER || 'https://api.us-central1.gcp.commercetools.com',
   authUrl: process.env.CTP_AUTH_URL || 'https://auth.us-central1.gcp.commercetools.com',
   apiUrl: process.env.CTP_API_URL || 'https://api.us-central1.gcp.commercetools.com',
-  sessionUrl: process.env.CTP_SESSION_URL || 'https://session.europe-west1.gcp.commercetools.com/',
+  sessionUrl: process.env.CTP_SESSION_URL || 'https://session.us-central1.gcp.commercetools.com',
   healthCheckTimeout: parseInt(process.env.HEALTH_CHECK_TIMEOUT || '5000'),
 
   // Required by logger
